@@ -24,7 +24,9 @@ class ArticleRepositoryImpl @Inject constructor(
 
         // load data form network
         try {
-            val remoteArticles = api.getBreakingNews()
+            val remoteResponce = api.getBreakingNews()
+            val remoteArticles = remoteResponce.articles
+            db.dao.deleteAllArticles()
             db.dao.insertArticles(remoteArticles.map { it.toArticleEntity() })
             emit(Resource.Success(data = db.dao.getAllArticles().map { it.toArticle() }))
         } catch (e: Exception){

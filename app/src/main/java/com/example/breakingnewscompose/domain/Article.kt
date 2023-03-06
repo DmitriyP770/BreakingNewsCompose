@@ -5,4 +5,5 @@ package com.example.breakingnewscompose.domain
      val content: String ,
      val imgUrl: String ,
      val url: String ,
+     val title : String
 )

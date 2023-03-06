@@ -10,6 +10,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.breakingnewscompose.ui.home_screen.HomeScreen
 import com.example.breakingnewscompose.ui.theme.BreakingNewsComposeTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -20,12 +21,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             BreakingNewsComposeTheme {
                 // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize() ,
-                    color = MaterialTheme.colors.background
-                ) {
-
-                }
+                HomeScreen()
             }
         }
     }
