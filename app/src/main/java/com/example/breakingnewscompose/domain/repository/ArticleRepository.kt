@@ -6,6 +6,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface ArticleRepository {
 
-    suspend fun getAllArticles(): Flow<Resource<List<Article>>>
+    suspend fun getAllArticles(page: Int ): Flow<Resource<List<Article>>>
 
 }

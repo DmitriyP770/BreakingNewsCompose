@@ -1,28 +1,26 @@
-package com.example.breakingnewscompose.data.repository
+package com.example.breakingnewscompose.data.pagination
 
 import com.example.breakingnewscompose.data.local.ArticleDatabase
 import com.example.breakingnewscompose.data.network.NewsApi
-import com.example.breakingnewscompose.data.network.dto.ArticleDto
 import com.example.breakingnewscompose.domain.Article
-import com.example.breakingnewscompose.domain.repository.ArticleRepository
 import com.example.breakingnewscompose.util.Resource
 import com.example.breakingnewscompose.util.toArticle
 import com.example.breakingnewscompose.util.toArticleEntity
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class ArticleRepositoryImpl @Inject constructor(
+class PagingRepository @Inject constructor(
     private val db: ArticleDatabase,
     private val api : NewsApi
-) : ArticleRepository {
-    override suspend fun getAllArticles(page: Int) : Flow<Resource<List<Article>>> = flow {
-        //cached data
+) {
+
+    suspend fun getAllNews(page: Int): Flow<Resource<List<Article>>> = flow {
         emit(Resource.Loading())
         val localNews = db.dao.getAllArticles().map { it.toArticle() }
         emit(Resource.Success(localNews))
-
-        // load data form network
         try {
             val remoteResponce = api.getBreakingNews()
             val remoteArticles = remoteResponce.articles
@@ -32,10 +30,5 @@ class ArticleRepositoryImpl @Inject constructor(
         } catch (e: Exception){
             emit(Resource.Error(msg = e.localizedMessage ?:"unknown error", data = localNews))
         }
-
-    }
-
-
-
-
+    }.flowOn(Dispatchers.IO)
 }
