@@ -72,8 +72,12 @@ class HomeViewModel @Inject constructor(
                 repository.getAllArticles(_page).onEach {result ->
                     when(result){
                         is Resource.Success -> {
-                            if (_page==1) _articles.clear()
-                            _articles.addAll(result.data ?: emptyList())
+                            if (_page==1) {
+                                _articles.clear()
+                                _articles.addAll(result.data ?: emptyList())
+                            } else {
+                                _articles.addAll(result.data ?: emptyList())
+                            }
                             _state.value = _state.value.copy(
                                 articles = _articles,
                                 isLoading = false,
@@ -84,8 +88,14 @@ class HomeViewModel @Inject constructor(
                             if (_state.value.canPaginate) _page++
                         }
                         is Resource.Loading -> {
+                            if (_page==1) {
+                                _articles.clear()
+                                _articles.addAll(result.data ?: emptyList())
+                            } else {
+                                _articles.addAll(result.data ?: emptyList())
+                            }
                             _state.value = _state.value.copy(
-                                articles = result.data ?: emptyList(),
+                                articles = _articles,
                                 isLoading = true,
                                 isRefreshing = false
                             )
@@ -93,7 +103,7 @@ class HomeViewModel @Inject constructor(
                         }
                         is Resource.Error ->{
                             _state.value = _state.value.copy(
-                                articles = result.data ?: emptyList(),
+                                articles = _articles,
                                 isLoading = false,
                                 isRefreshing = false
                             )
@@ -104,7 +114,7 @@ class HomeViewModel @Inject constructor(
                         }
                     }
 
-                }
+                }.launchIn(this)
             }
         }
 

@@ -20,11 +20,11 @@ class ArticleRepositoryImpl @Inject constructor(
         //cached data
         emit(Resource.Loading())
         val localNews = db.dao.getAllArticles().map { it.toArticle() }
-        emit(Resource.Success(localNews))
+        if (page==1 )emit(Resource.Success(localNews))
 
         // load data form network
         try {
-            val remoteResponce = api.getBreakingNews()
+            val remoteResponce = api.getBreakingNews(page = page)
             val remoteArticles = remoteResponce.articles
             db.dao.deleteAllArticles()
             db.dao.insertArticles(remoteArticles.map { it.toArticleEntity() })

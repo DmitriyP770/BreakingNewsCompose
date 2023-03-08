@@ -49,7 +49,6 @@ fun HomeScreen(
     viewModel : HomeViewModel  = androidx.lifecycle.viewmodel.compose.viewModel(),
 ) {
     val scaffoldState = rememberScaffoldState()
-    val state = viewModel.state.value
     LaunchedEffect(key1 = true){
         viewModel.eventFlow.collectLatest {
             when(it){
