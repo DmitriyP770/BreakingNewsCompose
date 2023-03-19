@@ -8,4 +8,6 @@ interface ArticleRepository {
 
     suspend fun getAllArticles(page: Int ): Flow<Resource<List<Article>>>
 
+    suspend fun searchArticles(query: String, page : Int): Flow<Resource<List<Article>>>
+
 }
