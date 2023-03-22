@@ -13,5 +13,7 @@ data class ArticleEntity(
     val url: String,
     val urlToImage: String?,
     @PrimaryKey
-    val id: Int? = null
+    val id: Int? = null,
+    val isFavorite: Boolean = false
+
 )

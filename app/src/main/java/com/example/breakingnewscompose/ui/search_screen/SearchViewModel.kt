@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val repository : ArticleRepository
+    private val repository : ArticleRepository ,
 ) : ViewModel() {
 
     private val _searchQuery = mutableStateOf<String>("")
@@ -24,30 +24,32 @@ class SearchViewModel @Inject constructor(
         get() = _searchQuery
     private val _articles = mutableStateListOf<Article>()
     private val _state = mutableStateOf(SearchScreenState())
-    val state: State<SearchScreenState>
+    val state : State<SearchScreenState>
         get() = _state
-    private var _searchJob: Job? = null
+    private var _searchJob : Job? = null
     private val _eventFlow = MutableSharedFlow<UIEvent>()
-    val eventFlow: SharedFlow<UIEvent>
+    val eventFlow : SharedFlow<UIEvent>
         get() = _eventFlow
     private var _page by mutableStateOf<Int>(1)
 
 
-    sealed class UIEvent{
-        data class ShowSnackBar(val msg: String) :  UIEvent()
+    sealed class UIEvent {
+        data class ShowSnackBar(val msg : String) : UIEvent()
         object ShowProgressBar : UIEvent()
     }
 
-    fun searchArticles(query: String){
-            if (query !== _searchQuery.value){_page = 1}
-            _searchQuery.value = query
-            _searchJob?.cancel()
-            _searchJob = viewModelScope.launch {
-                delay(Constants.SEARCH_DELAY)
-                repository.searchArticles(query = query, page = _page).onEach { result ->
+    fun searchArticles(query : String) {
+        if (query !== _searchQuery.value) {
+            _page = 1
+        }
+        _searchQuery.value = query
+        _searchJob?.cancel()
+        _searchJob = viewModelScope.launch {
+            delay(Constants.SEARCH_DELAY)
+            repository.searchArticles(query = query , page = _page).onEach { result ->
                 when (result) {
                     is Resource.Success -> {
-                        if (_page ==1 )_articles.clear()
+                        if (_page == 1) _articles.clear()
                         _articles.addAll(result.data ?: emptyList())
                         _state.value = _state.value.copy(
                             articles = _articles ,
@@ -79,12 +81,12 @@ class SearchViewModel @Inject constructor(
                     }
                 }
             }.launchIn(this)
-            }
-
         }
 
-
     }
+
+
+}
 
 
 

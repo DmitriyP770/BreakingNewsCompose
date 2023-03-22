@@ -29,39 +29,39 @@ class HomeViewModel @Inject constructor(
 
 
 
-    private fun loadNews() {
-        viewModelScope.launch {
-            repository.getAllArticles(page = _page).onEach {result ->
-                when(result){
-                    is Resource.Success -> {
-                        _state.value = _state.value.copy(
-                            articles = _articles,
-                            isLoading = false,
-                            isRefreshing = false
-                        )
-
-                    }
-                    is Resource.Loading -> {
-                        _state.value = _state.value.copy(
-                            articles = result.data ?: emptyList(),
-                            isLoading = true,
-                            isRefreshing = false
-                        )
-                    }
-                    is Resource.Error ->{
-                        _state.value = _state.value.copy(
-                            articles = result.data ?: emptyList(),
-                            isLoading = false,
-                            isRefreshing = false
-                        )
-                        _eventFlow.emit(
-                            UIEvent.ShowSnackBar(msg = result.msg ?: "Unknown error UI Event")
-                        )
-                    }
-                }
-            }.launchIn(this)
-        }
-    }
+//    private fun loadNews() {
+//        viewModelScope.launch {
+//            repository.getAllArticles(page = _page).onEach {result ->
+//                when(result){
+//                    is Resource.Success -> {
+//                        _state.value = _state.value.copy(
+//                            articles = _articles,
+//                            isLoading = false,
+//                            isRefreshing = false
+//                        )
+//
+//                    }
+//                    is Resource.Loading -> {
+//                        _state.value = _state.value.copy(
+//                            articles = result.data ?: emptyList(),
+//                            isLoading = true,
+//                            isRefreshing = false
+//                        )
+//                    }
+//                    is Resource.Error ->{
+//                        _state.value = _state.value.copy(
+//                            articles = result.data ?: emptyList(),
+//                            isLoading = false,
+//                            isRefreshing = false
+//                        )
+//                        _eventFlow.emit(
+//                            UIEvent.ShowSnackBar(msg = result.msg ?: "Unknown error UI Event")
+//                        )
+//                    }
+//                }
+//            }.launchIn(this)
+//        }
+//    }
 
      fun loadNewsWithPagination(){
         viewModelScope.launch {
@@ -69,7 +69,7 @@ class HomeViewModel @Inject constructor(
 //                (_page != 1 && _state.value.canPaginate) &&
 //                _listState.value == ListState.IDLE){
 //                _listState.value = if (_page== 1) ListState.LOADING else ListState.PAGINATING}
-                repository.getAllArticles(_page).onEach {result ->
+                repository.getAllArticles(_page).collect {result ->
                     when(result){
                         is Resource.Success -> {
                             if (_page==1) {
@@ -114,9 +114,11 @@ class HomeViewModel @Inject constructor(
                         }
                     }
 
-                }.launchIn(this)
+                }
             }
         }
+
+
 
 
     init {

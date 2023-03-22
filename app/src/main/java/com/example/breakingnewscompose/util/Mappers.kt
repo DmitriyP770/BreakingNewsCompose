@@ -9,8 +9,19 @@ fun ArticleDto.toArticleEntity() = ArticleEntity(
     author?: "", content, description, publishedAt, title, url, urlToImage
 )
 
-fun ArticleDto.toArticle() = Article(author ?: "", content ?: "", urlToImage ?: "", url, title)
+fun ArticleDto.toArticle() = Article(author ?: "", content ?: "", urlToImage ?: "", url, title, id = null)
 
-fun ArticleEntity.toArticle() = Article(author, content ?: "",urlToImage?:"",url, title )
+fun ArticleEntity.toArticle() = Article(author, content ?: "",urlToImage?:"",url, title, isFavorite, id )
 
-fun ArticleFavoriteEntity.toArticle() = Article(author, content ?: "", urlToImage ?: "", url, title)
+fun ArticleFavoriteEntity.toArticle() = Article(author, content ?: "", urlToImage ?: "", url, title, isFavorite = isFavorite, id = id)
+
+fun Article.toArticleFavoriteEntity() = ArticleFavoriteEntity(
+    author = author ,
+    content = content ,
+    description = null ,
+    publishedAt = "" ,
+    title = title,
+    url = url,
+    urlToImage = imgUrl,
+    isFavorite = true
+)

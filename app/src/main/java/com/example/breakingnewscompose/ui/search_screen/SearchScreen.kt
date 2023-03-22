@@ -6,11 +6,13 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -25,7 +27,6 @@ fun SearchScreen(
     modifier : Modifier = Modifier ,
     viewModel : SearchViewModel,
     navController : NavController
-//    viewModel : SearchViewModel = androidx.lifecycle.viewmodel.compose.viewModel() ,
 ) {
     val scaffoldState = rememberScaffoldState()
     val state = viewModel.state
@@ -58,7 +59,8 @@ fun SearchScreen(
                 keyboardActions = KeyboardActions(onDone = {
                     focusManager.clearFocus()
                 }),
-                onQueryChanged = viewModel::searchArticles
+                onQueryChanged = viewModel::searchArticles,
+                modifier = Modifier.padding(horizontal = 12.dp)
             )
             Divider(modifier = Modifier.height(8.dp))
             ArticleSearchColumn(viewModel = viewModel, modifier = Modifier.fillMaxSize(), navController = navController )
@@ -86,7 +88,7 @@ fun SearchField(
         singleLine = true,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().shadow(5.dp, shape = CircleShape)
     )
 
 }
@@ -122,19 +124,3 @@ fun ArticleSearchColumn(
     }
 }
 
-@Composable
- fun LoadWebPage(url: String){
-    AndroidView(factory = {
-        WebView(it).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
-            )
-            webViewClient = WebViewClient()
-            loadUrl(url)
-        }
-    }, update = {
-        it.loadUrl(url)
-    }
-    )
-}

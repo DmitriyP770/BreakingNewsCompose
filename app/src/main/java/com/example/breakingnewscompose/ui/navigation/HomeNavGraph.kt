@@ -6,6 +6,8 @@ import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.breakingnewscompose.ui.artile_detail.ArticleDetail
+import com.example.breakingnewscompose.ui.favorites_screen.FavoritesScreen
+import com.example.breakingnewscompose.ui.favorites_screen.FavoritesViewModel
 import com.example.breakingnewscompose.ui.home_screen.HomeScreen
 import com.example.breakingnewscompose.ui.home_screen.HomeViewModel
 import com.example.breakingnewscompose.ui.main_screen.BottomBarScreens
@@ -16,7 +18,8 @@ import com.example.breakingnewscompose.ui.search_screen.SearchViewModel
 fun HomeNavGraph(
     navController: NavHostController,
     homeViewModel : HomeViewModel,
-    searchViewModel : SearchViewModel
+    searchViewModel : SearchViewModel,
+    favoritesViewModel : FavoritesViewModel
 
 ) {
     NavHost(
@@ -29,6 +32,9 @@ fun HomeNavGraph(
         }
         composable(route = BottomBarScreens.Search.route){
             SearchScreen(viewModel = searchViewModel , navController = navController)
+        }
+        composable(route = BottomBarScreens.Favorites.route){
+            FavoritesScreen(favoritesViewModel = favoritesViewModel , navController = navController)
         }
         detailsNavGraph(navController = navController)
     }
