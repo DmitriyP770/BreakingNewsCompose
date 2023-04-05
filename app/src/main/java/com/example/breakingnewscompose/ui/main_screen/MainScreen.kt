@@ -1,9 +1,12 @@
 package com.example.breakingnewscompose.ui.main_screen
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -24,8 +27,11 @@ fun MainScreen(
     searchViewModel : SearchViewModel,
     favoritesViewModel : FavoritesViewModel
 ) {
-    Scaffold(bottomBar = {BottomBar(navController = navHostController)}) {
-       HomeNavGraph(navController = navHostController , homeViewModel = homeViewModel , searchViewModel = searchViewModel, favoritesViewModel =  favoritesViewModel)
+    val scaffoldState = rememberScaffoldState()
+    Scaffold(bottomBar = {BottomBar(navController = navHostController)}, scaffoldState = scaffoldState) {
+        Box(modifier = Modifier.padding(it)) {
+            HomeNavGraph(navController = navHostController , homeViewModel = homeViewModel , searchViewModel = searchViewModel, favoritesViewModel =  favoritesViewModel, scaffoldState = scaffoldState)
+        }
     }
 }
 

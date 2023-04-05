@@ -16,7 +16,7 @@ interface ArticleDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertArticles(articles: List<ArticleEntity>)
     @Query("SELECT * FROM article_entity")
-     fun getAllArticles(): Flow<List<ArticleEntity>>
+     fun getAllArticles(): List<ArticleEntity>
     @Query("DELETE FROM article_entity")
     suspend fun deleteAllArticles()
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -26,13 +26,15 @@ interface ArticleDao {
     @Query("DELETE FROM articlefavorite")
     suspend fun deleteAllFavoriteArticles()
 
-    @Update(entity = ArticleEntity::class)
-    suspend fun updateArticleInfo(article : Article)
-
     @Query("SELECT * FROM article_entity WHERE title LIKE '%' || :query || '%'" )
     suspend fun searchArticle(query: String): List<ArticleEntity>
 
-    @Query("DELETE FROm articlefavorite WHERE url LIKE '%' || :url || '%'")
+    @Query("DELETE FROM articlefavorite WHERE url LIKE '%' || :url || '%'")
     suspend fun deleteArticleFromFavorites(url : String)
+    @Query("UPDATE article_entity SET isFavorite = :isFavorite WHERE url LIKE '%' || :url || '%'")
+    suspend fun updateArticle(url: String, isFavorite: Boolean)
+
+    @Query("DELETE FROM article_entity WHERE id NOT IN (SELECT id FROM article_entity ORDER BY id DESC LIMIT 20)")
+    suspend fun deleteFirstSeveralArticles()
 
 }

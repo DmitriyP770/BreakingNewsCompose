@@ -1,14 +1,12 @@
 package com.example.breakingnewscompose.ui.common
 
+import android.annotation.SuppressLint
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Favorite
@@ -34,36 +32,52 @@ import coil.request.ImageRequest
 import com.example.breakingnewscompose.domain.Article
 import com.example.breakingnewscompose.ui.artile_detail.ArticleDetail
 import com.example.breakingnewscompose.ui.common.viewmodels.ArticleViewModel
+import com.example.breakingnewscompose.ui.home_screen.HomeViewModel
 import com.example.breakingnewscompose.ui.navigation.Graph
 import com.squareup.moshi.Moshi
+import kotlinx.coroutines.flow.collectLatest
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun ArticleItem(
     modifier : Modifier = Modifier ,
     article : Article ,
     navController : NavController ,
-
+    scaffoldState: ScaffoldState,
 ) {
     val articleViewModel: ArticleViewModel = hiltViewModel()
     val url = URLEncoder.encode(article.url, StandardCharsets.UTF_8.toString())
-    var articleL = article
-    var articleState by remember {
-        mutableStateOf<Article>(article)
+    var isLiked by remember {
+        mutableStateOf(article.isFavorite)
     }
+    
+
+    LaunchedEffect(key1 = true ){
+        articleViewModel.uiEvent.collectLatest {
+            when(it){
+                is ArticleViewModel.ArticleUIEvent.ShowSnackBar -> {
+                   val snackBarresult =  scaffoldState.snackbarHostState.showSnackbar(message = it.msg, actionLabel = "UNDO")
+                    when(snackBarresult){
+                        SnackbarResult.Dismissed -> {}
+                        SnackbarResult.ActionPerformed -> {
+                            articleViewModel.saveArticle(article)
+                        }
+                    }
+                }
+            }
+        }}
+
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(4.dp)
 //        .clickable { navController.navigate(NewsScreens.ArticleDetail.withArgs(article.url)) }
-    ) {    var isExpanded by remember {
-        mutableStateOf(false)
-    }
-        val rotationState by animateFloatAsState(targetValue = if (isExpanded) 180f else 0f)
+    ) {
         AsyncImage(modifier = Modifier.fillMaxSize(1f),
                 model = ImageRequest.Builder(LocalContext.current)
-                .data(articleState.imgUrl)
+                .data(article.imgUrl)
                 .crossfade(true)
                 .build(),
             contentDescription = "Article's Image",
@@ -73,11 +87,11 @@ fun ArticleItem(
             .fillMaxSize(1f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = articleState.title, fontWeight = FontWeight.Bold, fontSize = 24.sp, modifier = Modifier.clickable (onClick = { navController.navigate(
+            Text(text = article.title, fontWeight = FontWeight.Bold, fontSize = 24.sp, modifier = Modifier.clickable (onClick = { navController.navigate(
                 Graph.DETAILS+"/" + url
             ) })
                )
-            Text(text = articleState.content)
+            Text(text = article.content)
             Row(
                 modifier = Modifier.fillMaxWidth() ,
                 verticalAlignment = Alignment.CenterVertically ,
@@ -85,50 +99,57 @@ fun ArticleItem(
             ) {
                 IconButton(
                     onClick = {
-                        if(!articleL.isFavorite){
-                            articleState = articleState.copy(
-                                isFavorite = true
-                            )
-                            articleViewModel.updateArticleInfo(articleState)
-                            articleViewModel.saveArticle(article = articleState)
-                        } else{
-                            articleViewModel.deleteArticle(articleState)
-                            articleState = articleState.copy(
-                                isFavorite = false
-                            )
-                            articleViewModel.updateArticleInfo(articleState)
-
-                        }
-
-//                        TODO(reason = "add option to unlike a news and delete it from db")
-                },
+                        articleViewModel.handleLikeButtonClick(article)
+                        isLiked = !isLiked
+                    }
+                //                    {
+////                        if(!articleState.isFavorite){
+////                            articleState.isFavorite = true
+////                            /**
+////                            how can i correctly store status of article?
+////                            1. maybe use global list of local articles (not from db) and update article
+////                            info in it.
+////                            2. store all articles in db (now im trying to store up to 40 articles -
+////                            and statuses i'll retrieve from db. Doesn't work properly for now...
+////                            3. somehow share info between two viewmodels. Doesn't seem to be possible...
+////
+////
+////                            ==================
+////
+////                            i decided to remove like button because i connot see a way to correctly
+////                            restore status of an article, since i retrieve it from db, which i nullify
+////                            each data request when i paginating. So i belive i should implement some
+////                            sort of swipe to save functionality and snackbar which is shown when article
+////                            is already in db.
+////
+////
+////                             ===============
+////                             or what if i iterate throught favorite articles (from db) each time when
+////                             i load new articles and if article which is favorite in my list of all
+////                             articles , i'll update thah particular article in my list (in home VM)
+////                             */
+////
+////                            articleViewModel.saveArticle(article = articleState)
+////                        } else{
+////                            articleState.isFavorite = false
+////                            articleViewModel.deleteArticle(articleState)
+////                        }
+//                },
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Favorite ,
-                        contentDescription = "Like button" ,
-                        tint = if (articleState.isFavorite) Color.Red else Color.LightGray
-                    )
+                    LikeButton(isLiked = isLiked)
                 }
             }
 
         }
-    }
-}
+    }}
 
-@Preview
 @Composable
-fun SomeFun() {
-    Row(
-        modifier = Modifier.fillMaxWidth() ,
-        verticalAlignment = Alignment.CenterVertically ,
-        horizontalArrangement = Arrangement.End
-    ) {
-        IconButton(onClick = { /*TODO*/ }) {
-            Icon(
-                imageVector = Icons.Default.Favorite ,
-                contentDescription = "Like button" ,
-                tint = Color.LightGray
-            )
-        }
-    }
+fun LikeButton(
+    isLiked: Boolean
+) {
+    Icon(
+        imageVector = Icons.Default.Favorite ,
+        contentDescription = "Like button" ,
+        tint = if (isLiked) Color.Red else Color.LightGray
+    )
 }

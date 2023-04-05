@@ -1,5 +1,6 @@
 package com.example.breakingnewscompose.ui.navigation
 
+import androidx.compose.material.ScaffoldState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.navigation.*
@@ -19,7 +20,8 @@ fun HomeNavGraph(
     navController: NavHostController,
     homeViewModel : HomeViewModel,
     searchViewModel : SearchViewModel,
-    favoritesViewModel : FavoritesViewModel
+    favoritesViewModel : FavoritesViewModel,
+    scaffoldState : ScaffoldState
 
 ) {
     NavHost(
@@ -28,13 +30,13 @@ fun HomeNavGraph(
         startDestination = BottomBarScreens.Home.route
     ){
         composable(route = BottomBarScreens.Home.route){
-            HomeScreen(viewModel = homeViewModel , scaffoldState = rememberScaffoldState() , navController = navController)
+            HomeScreen(viewModel = homeViewModel , scaffoldState = scaffoldState , navController = navController)
         }
         composable(route = BottomBarScreens.Search.route){
-            SearchScreen(viewModel = searchViewModel , navController = navController)
+            SearchScreen(viewModel = searchViewModel , navController = navController, scaffoldState = scaffoldState)
         }
         composable(route = BottomBarScreens.Favorites.route){
-            FavoritesScreen(favoritesViewModel = favoritesViewModel , navController = navController)
+            FavoritesScreen(favoritesViewModel = favoritesViewModel , navController = navController, scaffoldState = scaffoldState)
         }
         detailsNavGraph(navController = navController)
     }

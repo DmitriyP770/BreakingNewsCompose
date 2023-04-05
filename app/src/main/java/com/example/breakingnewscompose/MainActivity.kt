@@ -34,3 +34,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+//TODO("Dissmiss / UNDO 5 sec snackbar")
+// TODO: Swipe to delete
+// TODO: SearchBar with chips

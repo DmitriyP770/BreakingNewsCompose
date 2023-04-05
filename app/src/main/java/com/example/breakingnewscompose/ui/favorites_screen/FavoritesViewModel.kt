@@ -1,9 +1,14 @@
 package com.example.breakingnewscompose.ui.favorites_screen
 
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.breakingnewscompose.domain.Article
 import com.example.breakingnewscompose.domain.repository.ArticleRepository
 import com.example.breakingnewscompose.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,6 +20,7 @@ import javax.inject.Inject
 class FavoritesViewModel @Inject constructor(
     private val repository : ArticleRepository
 ) : ViewModel() {
+    private var _favoriteArticles = mutableListOf<Article>()
 
     private val _state = mutableStateOf(FavoritesScreenState())
     val state: State<FavoritesScreenState>
@@ -29,8 +35,8 @@ class FavoritesViewModel @Inject constructor(
 
     private fun getArticlesFavorite(){
         viewModelScope.launch {
-            repository.getFavoriteArticles(isStreamNeeded = true).collect{ result ->
-                when(result){
+            repository.getFavoriteArticles(isStreamNeeded = true).onEach { result ->
+                when (result) {
                     is Resource.Error -> {
                         _uiEvent.emit(
                             FavoritesScreenUIEvent.ShowSnackBar(
@@ -38,11 +44,13 @@ class FavoritesViewModel @Inject constructor(
                             )
                         )
                     }
-                    is Resource.Success ->{
+                    is Resource.Success -> {
+                        _favoriteArticles = (result.data as MutableList<Article>?)!!
                         _state.value = _state.value.copy(
-                            artices = result.data ?: emptyList(),
+                            artices = _favoriteArticles ,
                             isLoading = false
                         )
+                        println("FAVARTS = $_favoriteArticles")
                     }
                     is Resource.Loading -> {
                         _state.value = _state.value.copy(
@@ -51,7 +59,7 @@ class FavoritesViewModel @Inject constructor(
                     }
                 }
 
-            }
+            }.collect()
         }
     }
 
