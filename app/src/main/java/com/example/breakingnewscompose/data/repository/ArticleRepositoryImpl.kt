@@ -23,41 +23,44 @@ class ArticleRepositoryImpl @Inject constructor(
     private val api : NewsApi ,
 ) : ArticleRepository {
     @RequiresApi(Build.VERSION_CODES.O)
-    override suspend fun getAllArticles(
-        page : Int ,
-        date : LocalDateTime ,
-    ) : Flow<Resource<List<Article>>> = flow {
-        //cached data
-        emit(Resource.Loading())
-        if (page == 1) {
-            db.dao.deleteFirstSeveralArticles()
+//    override suspend fun getAllArticles(
+//        page : Int ,
+//        date : LocalDateTime ,
+//    ) : Flow<Resource<List<Article>>> = flow {
+//        //cached data
+//        emit(Resource.Loading())
+//        if (page == 1) {
+//            db.dao.deleteFirstSeveralArticles()
+//
+//        }
+//        val localNews = db.dao.getAllArticles().map { it.toArticle() }
+//        val now = LocalDateTime.now().dayOfMonth
+//        //clear cache if articles from tomorrow or if it's qty more than 50
+//
+//
+//        // load data form network
+//        try {
+//            val remoteResponce = api.getBreakingNews(page = page)
+//            if (now != date.dayOfMonth || page ==1){
+//                db.dao.deleteAllArticles()
+//            }
+//            val remoteArticles = remoteResponce.articles
+////            db.dao.deleteAllArticles()
+//            db.dao.insertArticles(remoteArticles.map { it.toArticleEntity() })
+//            emit(Resource.Success(data = db.dao.getAllArticles().map { it.toArticle() }))
+//        } catch (e : Exception) {
+//            emit(Resource.Error(msg = e.localizedMessage ?: "unknown error" , data = localNews))
+//        }
+//
+//    }.flowOn(Dispatchers.IO)
 
-        }
-        val localNews = db.dao.getAllArticles().map { it.toArticle() }
-        val now = LocalDateTime.now().dayOfMonth
-        //clear cache if articles from tomorrow or if it's qty more than 50
-
-
-        // load data form network
-        try {
-            val remoteResponce = api.getBreakingNews(page = page)
-            if (now != date.dayOfMonth || page ==1){
-                db.dao.deleteAllArticles()
-            }
-            val remoteArticles = remoteResponce.articles
-//            db.dao.deleteAllArticles()
-            db.dao.insertArticles(remoteArticles.map { it.toArticleEntity() })
-            emit(Resource.Success(data = db.dao.getAllArticles().map { it.toArticle() }))
-        } catch (e : Exception) {
-            emit(Resource.Error(msg = e.localizedMessage ?: "unknown error" , data = localNews))
-        }
-
-    }.flowOn(Dispatchers.IO)
-
-    suspend fun loadArticlesFromNetwork(page : Int) : Resource<Boolean> {
+   private suspend fun loadArticlesFromNetwork(page : Int) : Resource<Boolean> {
         return try {
            val response =  api.getBreakingNews(page = page)
             val remoteArticles = response.articles
+            if (page==1 && remoteArticles.isNotEmpty()) {
+                db.dao.deleteAllArticles()
+            }
             db.dao.insertArticles(remoteArticles.map { it.toArticleEntity() })
              Resource.Success(data = true)
         } catch (e : Exception) {
@@ -65,13 +68,16 @@ class ArticleRepositoryImpl @Inject constructor(
         }
     }
 
-    fun observeBreakingNewsArticlesFromDb(page : Int): Flow<Resource<List<Article>>> = flow {
-        val networkCallResult =loadArticlesFromNetwork(page)
+    @RequiresApi(Build.VERSION_CODES.O)
+  override suspend fun observeBreakingNewsArticlesFromDb(page : Int): Flow<Resource<List<Article>>> = flow {
+        val networkCallResult = loadArticlesFromNetwork(page)
         emit(Resource.Loading())
-
         when(networkCallResult){
             is Resource.Success ->{
 
+                db.dao.getAllArticles().collect{
+                    emit(Resource.Success(it.map { it.toArticle() }))
+                }
             }
             else -> {
                 db.dao.getAllArticles().onEach {
@@ -79,13 +85,13 @@ class ArticleRepositoryImpl @Inject constructor(
                }.collect()
             }
         }
-        try {
-            db.dao.getAllArticles().collect{localArticles ->
-                emit(Resource.Success(localArticles.map { it.toArticle() }))
-            }
-        } catch (e:Exception){
-            emit(Resource.Error(msg = "An error occurred when trying to reach local database"))
-        }
+//        try {
+//            db.dao.getAllArticles().collect{localArticles ->
+//                emit(Resource.Success(localArticles.map { it.toArticle() }))
+//            }
+//        } catch (e:Exception){
+//            emit(Resource.Error(msg = "An error occurred when trying to reach local database"))
+//        }
 
     }.flowOn(Dispatchers.IO)
 
@@ -112,7 +118,6 @@ class ArticleRepositoryImpl @Inject constructor(
 
     override suspend fun getFavoriteArticles(isStreamNeeded : Boolean) : Flow<Resource<List<Article>>> =
         flow {
-            db.dao.deleteAllFavoriteArticles()
             emit(Resource.Loading())
             try {
                 db.dao.getFavoriteArticles().collect { localArticles ->

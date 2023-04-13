@@ -34,7 +34,7 @@ class HomeViewModel @Inject constructor(
     fun loadNewsWithPagination() {
         viewModelScope.launch {
 
-            repository.getAllArticles(_page, LocalDateTime.now()).collect { result ->
+            repository.observeBreakingNewsArticlesFromDb(_page).collect { result ->
                 when (result) {
                     is Resource.Success -> {
 
@@ -47,8 +47,8 @@ class HomeViewModel @Inject constructor(
                             canPaginate = result.data!!.size % 20 == 0 ,
                         )
                         _listState.value = ListState.IDLE
-                        checkBreakingNewsInFavorites(result.data)
                         if (_state.value.canPaginate) _page++
+                        println("PAGEPAGE $_page")
                     }
                     is Resource.Loading -> {
                         if (_page == 1) {

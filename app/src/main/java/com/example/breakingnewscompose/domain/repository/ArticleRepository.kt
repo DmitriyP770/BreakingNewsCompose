@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 
 interface ArticleRepository {
 
-    suspend fun getAllArticles(page: Int, date: LocalDateTime ): Flow<Resource<List<Article>>>
+//    suspend fun getAllArticles(page: Int, date: LocalDateTime ): Flow<Resource<List<Article>>>
 
     suspend fun searchArticles(query: String, page : Int): Flow<Resource<List<Article>>>
 
@@ -22,6 +22,6 @@ interface ArticleRepository {
 
     suspend fun onClose()
 
-
+   suspend fun observeBreakingNewsArticlesFromDb(page : Int): Flow<Resource<List<Article>>>
 
 }

@@ -16,7 +16,7 @@ interface ArticleDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertArticles(articles: List<ArticleEntity>)
     @Query("SELECT * FROM article_entity")
-     fun getAllArticles(): List<ArticleEntity>
+     fun getAllArticles(): Flow<List<ArticleEntity>>
     @Query("DELETE FROM article_entity")
     suspend fun deleteAllArticles()
     @Insert(onConflict = OnConflictStrategy.REPLACE)

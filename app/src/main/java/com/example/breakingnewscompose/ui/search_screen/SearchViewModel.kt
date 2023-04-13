@@ -44,47 +44,48 @@ class SearchViewModel @Inject constructor(
         }
         _searchQuery.value = query
         _searchJob?.cancel()
-        _searchJob = viewModelScope.launch {
-            delay(Constants.SEARCH_DELAY)
-            repository.searchArticles(query = query , page = _page).onEach { result ->
-                when (result) {
-                    is Resource.Success -> {
-                        if (_page == 1) _articles.clear()
-                        _articles.addAll(result.data ?: emptyList())
-                        _state.value = _state.value.copy(
-                            articles = _articles ,
-                            isLoading = false ,
-                            canPaginate = result.data?.size == 20
-                        )
-                        if (_state.value.canPaginate) _page++
-                    }
-                    is Resource.Error -> {
-                        _articles.addAll(result.data ?: emptyList())
-                        _state.value = _state.value.copy(
-                            articles = _articles ,
-                            isLoading = false ,
-                            canPaginate = false
-                        )
-                        _eventFlow.emit(
-                            UIEvent.ShowSnackBar(msg = result.msg ?: "Unknown error")
-                        )
+        if (query.isNotBlank()) {
+            _searchJob = viewModelScope.launch {
+                delay(Constants.SEARCH_DELAY)
+                repository.searchArticles(query = query , page = _page).onEach { result ->
+                    when (result) {
+                        is Resource.Success -> {
+                            if (_page == 1) _articles.clear()
+                            _articles.addAll(result.data ?: emptyList())
+                            _state.value = _state.value.copy(
+                                articles = _articles ,
+                                isLoading = false ,
+                                canPaginate = result.data?.size == 20
+                            )
+                            if (_state.value.canPaginate) _page++
+                        }
+                        is Resource.Error -> {
+                            _articles.addAll(result.data ?: emptyList())
+                            _state.value = _state.value.copy(
+                                articles = _articles ,
+                                isLoading = false ,
+                                canPaginate = false
+                            )
+                            _eventFlow.emit(
+                                UIEvent.ShowSnackBar(msg = result.msg ?: "Unknown error")
+                            )
 
+                        }
+                        is Resource.Loading -> {
+                            _articles.addAll(result.data ?: emptyList())
+                            _state.value = _state.value.copy(
+                                articles = _articles ,
+                                isLoading = true ,
+                                canPaginate = false
+                            )
+                            _eventFlow.emit(UIEvent.ShowProgressBar)
+                        }
                     }
-                    is Resource.Loading -> {
-                        _articles.addAll(result.data ?: emptyList())
-                        _state.value = _state.value.copy(
-                            articles = _articles ,
-                            isLoading = true ,
-                            canPaginate = false
-                        )
-                        _eventFlow.emit(UIEvent.ShowProgressBar)
-                    }
-                }
-            }.launchIn(this)
+                }.launchIn(this)
+            }
+
         }
-
     }
-
 
 }
 
